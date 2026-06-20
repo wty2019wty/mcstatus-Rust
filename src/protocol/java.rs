@@ -8,7 +8,7 @@ use crate::address::Address;
 use crate::buffer::Buffer;
 use crate::connection::TcpConnection;
 use crate::error::{McStatusError, Result};
-use crate::io::{MinecraftRead, MinecraftWrite};
+use crate::io::MinecraftWrite;
 use crate::response::java::JavaStatusResponse;
 
 /// Client for the Java Edition Server List Ping protocol (1.7+).
