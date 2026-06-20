@@ -89,3 +89,12 @@ python3 -m mcstatus --help
 ## License
 
 Mcstatus is licensed under the Apache 2.0 license. See LICENSE for full text.
+
+
+
+
+
+# Rust 
+cargo build --features cli
+
+cargo build
