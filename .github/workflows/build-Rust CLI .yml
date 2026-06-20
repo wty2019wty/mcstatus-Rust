@@ -17,8 +17,14 @@ jobs:
           - os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
             binary: mcstatus
+          - os: ubuntu-24.04-arm
+            target: aarch64-unknown-linux-gnu
+            binary: mcstatus
           - os: macos-latest
             target: x86_64-apple-darwin
+            binary: mcstatus
+          - os: macos-latest
+            target: aarch64-apple-darwin
             binary: mcstatus
           - os: windows-latest
             target: x86_64-pc-windows-msvc
@@ -55,7 +61,7 @@ jobs:
       - name: Upload binary artifact
         uses: actions/upload-artifact@v7
         with:
-          name: mcstatus-${{ matrix.os }}
+          name: mcstatus-${{ matrix.target }}
           path: target/${{ matrix.target }}/release/${{ matrix.binary }}
           if-no-files-found: error
           retention-days: 30
