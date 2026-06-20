@@ -111,3 +111,8 @@ sftp-config.json
 
 ### Visual Studio Code ###
 .vscode
+
+
+# Added by cargo
+
+/target
