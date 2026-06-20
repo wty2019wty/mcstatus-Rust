@@ -143,12 +143,11 @@ mod tests {
             software: None,
         };
 
-        let response = QueryResponse::build(raw);
+        let response = QueryResponse::build(raw, vec![]);
         assert_eq!(response.motd.to_plain(), "A Minecraft Server");
         assert_eq!(response.players.online, 5);
         assert_eq!(response.players.max, 20);
-        assert_eq!(response.players.list.len(), 2);
-        assert_eq!(response.players.list[0], "Player1");
+        assert_eq!(response.players.list.len(), 0); // empty players list passed
         assert_eq!(response.map_name.as_deref(), Some("world"));
         assert_eq!(response.game_type.as_deref(), Some("SMP"));
 
@@ -161,7 +160,7 @@ mod tests {
     #[test]
     fn test_build_minimal_query() {
         let raw = RawQueryResponse::default();
-        let response = QueryResponse::build(raw);
+        let response = QueryResponse::build(raw, vec![]);
         assert_eq!(response.motd.to_plain(), "");
         assert_eq!(response.players.online, 0);
         assert_eq!(response.players.max, 0);

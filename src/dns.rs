@@ -44,7 +44,10 @@ pub async fn minecraft_srv_address_lookup(
 /// Returns `Some(Address)` if an SRV record is found, `None` if not.
 pub async fn resolve_mc_srv(host: &str) -> Result<Option<Address>, String> {
     let srv_host = format!("_minecraft._tcp.{host}");
-    async_resolve_srv_record(&srv_host).await
+    match async_resolve_srv_record(&srv_host).await? {
+        Some((target, port)) => Ok(Some(Address::new(target, port))),
+        None => Ok(None),
+    }
 }
 
 /// Resolves an SRV record, returning the target host and port.
@@ -52,7 +55,7 @@ pub async fn async_resolve_srv_record(
     fqdn: &str,
 ) -> Result<Option<(String, u16)>, String> {
     use hickory_resolver::TokioAsyncResolver;
-    use hickory_resolver::proto::rr::RecordType;
+    use hickory_resolver::proto::rr::{RData, RecordType};
 
     let resolver = TokioAsyncResolver::builder_tokio()
         .map_err(|e| format!("Failed to create resolver: {e}"))?
@@ -64,7 +67,7 @@ pub async fn async_resolve_srv_record(
         .map_err(|e| format!("SRV lookup failed: {e}"))?;
 
     for record in response.record_iter() {
-        if let Some(srv) = record.data().and_then(|d| d.as_srv()) {
+        if let RData::SRV(srv) = record.data() {
             let target = srv.target().to_string().trim_end_matches('.').to_string();
             let port = srv.port();
             return Ok(Some((target, port)));

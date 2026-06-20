@@ -205,7 +205,10 @@ pub trait MinecraftRead: Read {
     }
 
     /// Reads a byte array prefixed with its length as a varint.
-    fn read_mc_bytearray(&mut self) -> std::io::Result<Vec<u8>> {
+    fn read_mc_bytearray(&mut self) -> std::io::Result<Vec<u8>>
+    where
+        Self: Sized,
+    {
         let length = self.read_mc_varint()?;
         if length < 0 {
             return Err(std::io::Error::new(
@@ -237,7 +240,10 @@ pub trait MinecraftRead: Read {
     /// Reads a UTF-8 string prefixed with its byte length as a varint.
     ///
     /// Maximum string length is 32767 characters.
-    fn read_mc_utf(&mut self) -> std::io::Result<String> {
+    fn read_mc_utf(&mut self) -> std::io::Result<String>
+    where
+        Self: Sized,
+    {
         let length = self.read_mc_varint()?;
         if length < 0 {
             return Err(std::io::Error::new(
@@ -357,7 +363,10 @@ pub trait MinecraftWrite: Write {
     }
 
     /// Writes a byte array prefixed with its length as a varint.
-    fn write_mc_bytearray(&mut self, data: &[u8]) -> std::io::Result<()> {
+    fn write_mc_bytearray(&mut self, data: &[u8]) -> std::io::Result<()>
+    where
+        Self: Sized,
+    {
         self.write_mc_varint(data.len() as i32)?;
         self.write_all(data)?;
         Ok(())
@@ -381,7 +390,10 @@ pub trait MinecraftWrite: Write {
     /// Writes a UTF-8 string prefixed with its byte length as a varint.
     ///
     /// Maximum string length is 32767 characters.
-    fn write_mc_utf(&mut self, value: &str) -> std::io::Result<()> {
+    fn write_mc_utf(&mut self, value: &str) -> std::io::Result<()>
+    where
+        Self: Sized,
+    {
         if value.len() > 32767 {
             return Err(std::io::Error::new(
                 std::io::ErrorKind::InvalidInput,

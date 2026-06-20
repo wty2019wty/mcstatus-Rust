@@ -53,7 +53,7 @@ mod tests {
         assert_eq!(or_none(Some(1), None), Some(1));
         assert_eq!(or_none(None, Some(2)), Some(2));
         assert_eq!(or_none(Some(0), None), Some(0)); // 0 is valid
-        assert_eq!(or_none(None, None), None);
+        assert_eq!(or_none::<i32>(None, None), None);
     }
 
     #[tokio::test]

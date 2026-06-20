@@ -279,21 +279,9 @@ mod tests {
         use std::time::Duration;
 
         // Build a valid status response in a buffer
-        let mut response = Buffer::new();
         let json = r#"{"description":"Test","players":{"max":20,"online":0},"version":{"name":"1.8","protocol":47}}"#;
-        response.write_mc_utf(json).unwrap();
 
-        let client_data = JavaClient {
-            connection: unimplemented!(), // won't be used in this test
-            address: crate::address::Address::new("test".into(), 25565),
-            version: 47,
-            ping_token: 0,
-        };
-
-        let start = Instant::now();
-        // We need to adjust: the buffer already has JSON, but handle_status_response
-        // expects the buffer to have 1 byte packet_id + varint + JSON
-        // Let's rebuild the buffer correctly
+        // Build the buffer correctly: 1 byte packet_id + varint length + JSON bytes
         let mut response = Buffer::new();
         response.write_ubyte(0); // packet ID 0 (single byte, not varint for packet ID in response)
         response.write_mc_varint(json.len() as i32).unwrap();
