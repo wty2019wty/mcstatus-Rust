@@ -14,7 +14,7 @@
 //! use mcstatus::server::JavaServer;
 //!
 //! # async fn example() -> mcstatus::error::Result<()> {
-//! let server = JavaServer::lookup("mc.example.com:25565", 3.0).await?;
+//! let server = JavaServer::lookup("mc.example.com:25565", 3.0, false).await?;
 //! let status = server.status().await?;
 //! println!("MOTD: {}", status.motd.to_plain());
 //! println!("Players: {}/{}", status.players.online, status.players.max);

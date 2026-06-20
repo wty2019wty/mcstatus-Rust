@@ -25,6 +25,10 @@ struct Cli {
     #[arg(long, group = "server_type")]
     legacy: bool,
 
+    /// Skip DNS SRV record lookup (use the address as-is).
+    #[arg(long)]
+    no_srv: bool,
+
     #[command(subcommand)]
     command: Option<Commands>,
 }
@@ -57,14 +61,14 @@ async fn run(cli: Cli) -> Result<()> {
     if cli.bedrock {
         run_bedrock(cli.address, command).await
     } else if cli.legacy {
-        run_legacy(cli.address, command).await
+        run_legacy(cli.address, command, cli.no_srv).await
     } else {
-        run_java(cli.address, command).await
+        run_java(cli.address, command, cli.no_srv).await
     }
 }
 
-async fn run_java(address: String, command: Commands) -> Result<()> {
-    let server = JavaServer::lookup(&address, 3.0).await?;
+async fn run_java(address: String, command: Commands, no_srv: bool) -> Result<()> {
+    let server = JavaServer::lookup(&address, 3.0, no_srv).await?;
 
     match command {
         Commands::Ping => {
@@ -125,8 +129,8 @@ async fn run_bedrock(address: String, command: Commands) -> Result<()> {
     Ok(())
 }
 
-async fn run_legacy(address: String, command: Commands) -> Result<()> {
-    let server = LegacyServer::lookup(&address, 3.0).await?;
+async fn run_legacy(address: String, command: Commands, no_srv: bool) -> Result<()> {
+    let server = LegacyServer::lookup(&address, 3.0, no_srv).await?;
 
     match command {
         Commands::Ping | Commands::Status => {

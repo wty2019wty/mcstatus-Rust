@@ -14,8 +14,14 @@ use crate::address::Address;
 pub async fn minecraft_srv_address_lookup(
     address: &str,
     default_port: u16,
+    skip_srv: bool,
 ) -> Result<Address, String> {
     let addr = Address::parse_address(address, default_port)?;
+
+    // If the caller explicitly asked to skip SRV, return the parsed address as-is
+    if skip_srv {
+        return Ok(addr);
+    }
 
     // If a specific port was given in the address, don't do SRV lookup
     if address.contains(':') && !address.starts_with('[') {
@@ -99,7 +105,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_minecraft_srv_with_explicit_port() {
-        let result = minecraft_srv_address_lookup("example.com:25565", 25565)
+        let result = minecraft_srv_address_lookup("example.com:25565", 25565, false)
             .await
             .unwrap();
         assert_eq!(result.host, "example.com");
@@ -108,10 +114,20 @@ mod tests {
 
     #[tokio::test]
     async fn test_minecraft_srv_without_port() {
-        let result = minecraft_srv_address_lookup("localhost", 25565)
+        let result = minecraft_srv_address_lookup("localhost", 25565, false)
             .await
             .unwrap();
         assert_eq!(result.host, "localhost");
+        assert_eq!(result.port, 25565);
+    }
+
+    #[tokio::test]
+    async fn test_minecraft_srv_skip() {
+        // With skip_srv=true, SRV lookup is skipped entirely
+        let result = minecraft_srv_address_lookup("mc.example.com", 25565, true)
+            .await
+            .unwrap();
+        assert_eq!(result.host, "mc.example.com");
         assert_eq!(result.port, 25565);
     }
 }

@@ -47,9 +47,11 @@ impl JavaServer {
     }
 
     /// Resolves the server address with SRV lookup, mimicking Minecraft's address field.
+    ///
+    /// Set `no_srv` to `true` to skip SRV record lookup.
     #[cfg(feature = "dns")]
-    pub async fn lookup(address: &str, timeout: f64) -> Result<Self> {
-        let addr = crate::dns::minecraft_srv_address_lookup(address, 25565).await?;
+    pub async fn lookup(address: &str, timeout: f64, no_srv: bool) -> Result<Self> {
+        let addr = crate::dns::minecraft_srv_address_lookup(address, 25565, no_srv).await?;
         Ok(Self {
             address: addr,
             timeout: Duration::from_secs_f64(timeout),
@@ -59,7 +61,7 @@ impl JavaServer {
 
     /// Resolves the server address without SRV lookup.
     #[cfg(not(feature = "dns"))]
-    pub async fn lookup(address: &str, timeout: f64) -> Result<Self> {
+    pub async fn lookup(address: &str, timeout: f64, _no_srv: bool) -> Result<Self> {
         let addr = Address::parse_address(address, 25565)
             .map_err(|e| McStatusError::InvalidAddress(e))?;
         Ok(Self {
@@ -208,9 +210,11 @@ impl LegacyServer {
     }
 
     /// Resolves the server address with SRV lookup.
+    ///
+    /// Set `no_srv` to `true` to skip SRV record lookup.
     #[cfg(feature = "dns")]
-    pub async fn lookup(address: &str, timeout: f64) -> Result<Self> {
-        let addr = crate::dns::minecraft_srv_address_lookup(address, 25565).await?;
+    pub async fn lookup(address: &str, timeout: f64, no_srv: bool) -> Result<Self> {
+        let addr = crate::dns::minecraft_srv_address_lookup(address, 25565, no_srv).await?;
         Ok(Self {
             address: addr,
             timeout: Duration::from_secs_f64(timeout),
@@ -219,7 +223,7 @@ impl LegacyServer {
 
     /// Resolves the server address without SRV lookup.
     #[cfg(not(feature = "dns"))]
-    pub async fn lookup(address: &str, timeout: f64) -> Result<Self> {
+    pub async fn lookup(address: &str, timeout: f64, _no_srv: bool) -> Result<Self> {
         let addr = Address::parse_address(address, 25565)
             .map_err(|e| McStatusError::InvalidAddress(e))?;
         Ok(Self {
