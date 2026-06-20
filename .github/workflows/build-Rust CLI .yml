@@ -16,13 +16,13 @@ jobs:
         include:
           - os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
-            artifact: mcstatus-linux
+            binary: mcstatus
           - os: macos-latest
             target: x86_64-apple-darwin
-            artifact: mcstatus-macos
+            binary: mcstatus
           - os: windows-latest
             target: x86_64-pc-windows-msvc
-            artifact: mcstatus.exe
+            binary: mcstatus.exe
 
     steps:
       - name: Checkout repository
@@ -55,7 +55,7 @@ jobs:
       - name: Upload binary artifact
         uses: actions/upload-artifact@v7
         with:
-          name: ${{ matrix.artifact }}
-          path: target/${{ matrix.target }}/release/${{ matrix.artifact }}
+          name: mcstatus-${{ matrix.os }}
+          path: target/${{ matrix.target }}/release/${{ matrix.binary }}
           if-no-files-found: error
           retention-days: 30
