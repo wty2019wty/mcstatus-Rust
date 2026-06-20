@@ -56,16 +56,45 @@ pub async fn resolve_mc_srv(host: &str) -> Result<Option<Address>, String> {
     }
 }
 
+/// Creates a `TokioResolver`, falling back to public DNS if system
+/// config is unavailable (e.g. Android/Termux without `/etc/resolv.conf`).
+fn create_resolver() -> Result<hickory_resolver::TokioResolver, String> {
+    use std::net::IpAddr;
+    use hickory_resolver::TokioResolver;
+    use hickory_resolver::name_server::TokioConnectionProvider;
+    use hickory_resolver::config::{NameServerConfigGroup, ResolverConfig, ResolverOpts};
+
+    // Try system config first.
+    match TokioResolver::builder_tokio() {
+        Ok(builder) => Ok(builder.build()),
+        Err(_) => {
+            // Fallback: use Alibaba + Google public DNS (works on Android/Termux).
+            let ns = NameServerConfigGroup::from_ips_clear(
+                &[
+                    IpAddr::from([223u8, 5, 5, 5]),       // Alibaba
+                    IpAddr::from([223u8, 6, 6, 6]),       // Alibaba
+                    IpAddr::from([8u8, 8, 8, 8]),          // Google
+                    IpAddr::from([8u8, 8, 4, 4]),          // Google
+                ],
+                53,
+                true,
+            );
+            let config = ResolverConfig::from_parts(None, vec![], ns);
+            let opts = ResolverOpts::default();
+            Ok(TokioResolver::builder_with_config(config, TokioConnectionProvider::default())
+                .with_options(opts)
+                .build())
+        }
+    }
+}
+
 /// Resolves an SRV record, returning the target host and port.
 pub async fn async_resolve_srv_record(
     fqdn: &str,
 ) -> Result<Option<(String, u16)>, String> {
-    use hickory_resolver::TokioResolver;
     use hickory_resolver::proto::rr::{RData, RecordType};
 
-    let resolver = TokioResolver::builder_tokio()
-        .map_err(|e| format!("Failed to create resolver: {e}"))?
-        .build();
+    let resolver = create_resolver()?;
 
     let response = resolver
         .lookup(fqdn, RecordType::SRV)
@@ -85,11 +114,7 @@ pub async fn async_resolve_srv_record(
 
 /// Resolves an A record for the given hostname.
 pub async fn async_resolve_a_record(host: &str) -> Result<Vec<std::net::IpAddr>, String> {
-    use hickory_resolver::TokioResolver;
-
-    let resolver = TokioResolver::builder_tokio()
-        .map_err(|e| format!("Failed to create resolver: {e}"))?
-        .build();
+    let resolver = create_resolver()?;
 
     let response = resolver
         .lookup_ip(host)

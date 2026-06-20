@@ -172,7 +172,7 @@ mod hex {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::motd::components::{MinecraftColor, WebColor};
+    use crate::motd::components::MinecraftColor;
 
     #[test]
     fn test_to_plain() {
