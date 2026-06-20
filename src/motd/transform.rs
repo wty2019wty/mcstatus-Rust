@@ -49,7 +49,6 @@ pub fn to_minecraft(components: &ComponentList) -> String {
 pub fn to_html(components: &ComponentList) -> String {
     let mut result = String::new();
     let mut open_tags: Vec<String> = Vec::new();
-    let mut current_color: Option<String> = None;
 
     for component in components {
         match component {
@@ -58,7 +57,6 @@ pub fn to_html(components: &ComponentList) -> String {
                 Formatting::Reset => {
                     // Close all open tags
                     close_all_tags(&mut result, &mut open_tags);
-                    current_color = None;
                 }
                 Formatting::Bold => {
                     result.push_str("<span style=\"font-weight: bold\">");
@@ -87,14 +85,12 @@ pub fn to_html(components: &ComponentList) -> String {
                 let color = format!("#{:06X}", c.rgb());
                 result.push_str(&format!("<span style=\"color: {color}\">"));
                 open_tags.push("</span>".into());
-                current_color = Some(color);
             }
             MotdComponent::WebColor(c) => {
                 close_all_tags(&mut result, &mut open_tags);
                 let color = format!("#{:06X}", c.rgb());
                 result.push_str(&format!("<span style=\"color: {color}\">"));
                 open_tags.push("</span>".into());
-                current_color = Some(color);
             }
             MotdComponent::TranslationTag { id } => {
                 result.push_str(&html_escape(id));

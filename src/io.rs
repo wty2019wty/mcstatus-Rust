@@ -53,11 +53,6 @@ pub fn from_twos_complement(number: u64, bits: u32) -> std::result::Result<i64, 
 
 // ── Varint Encoding / Decoding ───────────────────────────────────────────────
 
-/// Maximum number of bytes needed to encode a 32-bit varint.
-const MAX_VARINT_BYTES_32: usize = 5;
-/// Maximum number of bytes needed to encode a 64-bit varlong.
-const MAX_VARLONG_BYTES_64: usize = 10;
-
 /// Reads an unsigned varint from the given reader.
 ///
 /// Varints use 7 bits per byte with the MSB as a continuation flag.

@@ -18,8 +18,6 @@ use crate::response::java::JavaStatusResponse;
 use crate::response::legacy::LegacyStatusResponse;
 use crate::response::query::QueryResponse;
 
-/// Default timeout in seconds.
-const DEFAULT_TIMEOUT: f64 = 3.0;
 /// Default number of retry attempts.
 const DEFAULT_TRIES: usize = 3;
 

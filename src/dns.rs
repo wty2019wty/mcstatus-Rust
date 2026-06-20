@@ -54,10 +54,10 @@ pub async fn resolve_mc_srv(host: &str) -> Result<Option<Address>, String> {
 pub async fn async_resolve_srv_record(
     fqdn: &str,
 ) -> Result<Option<(String, u16)>, String> {
-    use hickory_resolver::TokioAsyncResolver;
+    use hickory_resolver::TokioResolver;
     use hickory_resolver::proto::rr::{RData, RecordType};
 
-    let resolver = TokioAsyncResolver::builder_tokio()
+    let resolver = TokioResolver::builder_tokio()
         .map_err(|e| format!("Failed to create resolver: {e}"))?
         .build();
 
@@ -79,9 +79,9 @@ pub async fn async_resolve_srv_record(
 
 /// Resolves an A record for the given hostname.
 pub async fn async_resolve_a_record(host: &str) -> Result<Vec<std::net::IpAddr>, String> {
-    use hickory_resolver::TokioAsyncResolver;
+    use hickory_resolver::TokioResolver;
 
-    let resolver = TokioAsyncResolver::builder_tokio()
+    let resolver = TokioResolver::builder_tokio()
         .map_err(|e| format!("Failed to create resolver: {e}"))?
         .build();
 

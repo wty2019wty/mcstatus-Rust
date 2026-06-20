@@ -222,6 +222,7 @@ fn read_varint_from_buffer(buf: &mut Buffer) -> Result<i32> {
 mod tests {
     use super::*;
     use crate::buffer::Buffer;
+    use crate::io::MinecraftRead;
 
     #[test]
     fn test_build_handshake_packet() {

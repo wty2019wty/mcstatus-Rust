@@ -3,7 +3,6 @@
 //! Provides async (tokio-based) connections that implement the Minecraft
 //! protocol read/write traits.
 
-use std::io::{Read, Write};
 use std::net::SocketAddr;
 use std::time::Duration;
 
@@ -22,7 +21,6 @@ pub struct TcpConnection {
     stream: TcpStream,
     address: Address,
     timeout: Duration,
-    read_buffer: Vec<u8>,
 }
 
 impl TcpConnection {
@@ -44,7 +42,6 @@ impl TcpConnection {
             stream,
             address,
             timeout,
-            read_buffer: Vec::new(),
         })
     }
 
