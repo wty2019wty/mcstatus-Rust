@@ -1,6 +1,5 @@
 use std::io::{Read, Write};
 
-use crate::error::{McStatusError, Result};
 
 // ── Two's Complement Conversion ──────────────────────────────────────────────
 
@@ -9,6 +8,11 @@ use crate::error::{McStatusError, Result};
 ///
 /// Returns an error if the number is out of range for the given bit width.
 pub fn to_twos_complement(number: i64, bits: u32) -> std::result::Result<u64, String> {
+    if bits >= 64 {
+        // For 64 bits, the full range is representable
+        return Ok(number as u64);
+    }
+
     let value_max: i64 = 1_i64.wrapping_shl(bits - 1);
     let value_min: i64 = -value_max;
 
@@ -29,6 +33,10 @@ pub fn to_twos_complement(number: i64, bits: u32) -> std::result::Result<u64, St
 ///
 /// Returns an error if the number doesn't fit into the given bit width.
 pub fn from_twos_complement(number: u64, bits: u32) -> std::result::Result<i64, String> {
+    if bits >= 64 {
+        return Ok(number as i64);
+    }
+
     let value_max: u64 = (1_u64.wrapping_shl(bits)).wrapping_sub(1);
     if number > value_max {
         return Err(format!(

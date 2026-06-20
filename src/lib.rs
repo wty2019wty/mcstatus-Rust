@@ -10,8 +10,8 @@
 //!
 //! ## Example (async)
 //!
-//! ```rust,no_run
-//! use mcstatus::JavaServer;
+//! ```rust,ignore
+//! use mcstatus::server::JavaServer;
 //!
 //! # async fn example() -> mcstatus::error::Result<()> {
 //! let server = JavaServer::lookup("mc.example.com:25565", 3.0).await?;

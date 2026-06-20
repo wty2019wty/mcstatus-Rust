@@ -169,7 +169,6 @@ async fn resolve_socket_addr(address: &Address) -> Result<SocketAddr> {
 }
 
 // For backwards-compat with sync code in tests
-use std::net::ToSocketAddrs;
 
 #[cfg(test)]
 mod tests {

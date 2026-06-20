@@ -3,15 +3,17 @@
 //! Transforms a parsed MOTD component list into various output formats:
 //! plain text, Minecraft section-sign format, HTML, and ANSI 24-bit color.
 
-use super::components::{Formatting, MinecraftColor, MotdComponent, WebColor};
+use super::components::{Formatting, MotdComponent};
 use super::simplify::ComponentList;
 
 /// Transforms a component list into plain text, stripping all formatting and color.
 pub fn to_plain(components: &ComponentList) -> String {
     let mut result = String::new();
     for component in components {
-        if let MotdComponent::Text(s) = component {
-            result.push_str(s);
+        match component {
+            MotdComponent::Text(s) => result.push_str(s),
+            MotdComponent::TranslationTag { id } => result.push_str(id),
+            _ => {}
         }
     }
     result

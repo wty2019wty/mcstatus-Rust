@@ -98,21 +98,17 @@ mod tests {
 
     #[test]
     fn test_parse_response_valid() {
-        // Build a minimal valid Bedrock response
-        let mut data = vec![0u8; 34];
-        // Add server info string (semicolon-delimited fields)
+        // Build a valid Bedrock response
+        // Format: [packet_id:1][padding:32][name_length:2][server_info:N]
+        // After skipping packet_id, name_length is at offset 32
         let info = "Pocketmine-MP;§cHello;422;1.18.0;0;20;Survival;;world";
         let info_bytes = info.as_bytes();
         let name_length = info_bytes.len() as u16;
 
-        data.extend_from_slice(&name_length.to_be_bytes());
-        data.push(0x1c); // packet ID byte (at position 0 in original data)
-
-        // Now build full response: packet_id + padding + name_length + info
         let mut response = vec![0x1c]; // packet ID
-        response.extend_from_slice(&vec![0u8; 33]); // padding
-        response.extend_from_slice(&name_length.to_be_bytes());
-        response.extend_from_slice(info_bytes);
+        response.extend_from_slice(&vec![0u8; 32]); // padding (32 bytes, offsets 1-32)
+        response.extend_from_slice(&name_length.to_be_bytes()); // name_length at offset 33-34
+        response.extend_from_slice(info_bytes); // server info at offset 35+
 
         let result = BedrockClient::parse_response(&response, 42.0);
         assert!(result.is_ok());

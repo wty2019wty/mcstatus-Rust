@@ -56,7 +56,7 @@ pub struct QuerySoftware {
 impl QueryResponse {
     /// Builds a `QueryResponse` from a raw parsed query response and player list.
     pub fn build(raw: RawQueryResponse, players: Vec<String>) -> Self {
-        let mut raw = raw;
+        let raw = raw;
         let motd_raw = raw.hostname.as_deref().unwrap_or("");
         let motd = Motd::from_string(motd_raw, false);
 
@@ -77,7 +77,7 @@ impl QueryResponse {
             None
         };
 
-        let player_list = if players.is_empty() { raw.players.clone() } else { players };
+        let player_list = if !players.is_empty() { players } else { raw.players.clone() };
 
         Self {
             motd,
@@ -147,7 +147,7 @@ mod tests {
         assert_eq!(response.motd.to_plain(), "A Minecraft Server");
         assert_eq!(response.players.online, 5);
         assert_eq!(response.players.max, 20);
-        assert_eq!(response.players.list.len(), 0); // empty players list passed
+        assert_eq!(response.players.list.len(), 2); // uses raw.players when passed list is empty
         assert_eq!(response.map_name.as_deref(), Some("world"));
         assert_eq!(response.game_type.as_deref(), Some("SMP"));
 

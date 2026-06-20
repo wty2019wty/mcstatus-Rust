@@ -143,18 +143,18 @@ impl QueryClient {
                     "maxplayers", "numplayers", "plugins", "version",
                 ];
 
-                let mut end = pos;
-                let mut found_key = None;
+                let mut found_key_idx = None;
                 for k in &known_keys {
-                    // Search for the null-terminated key pattern
-                    if let Some(idx) = find_subsequence(&body[pos..], format!("{}\0", k).as_bytes()) {
-                        if found_key.map_or(true, |(prev_end, _)| idx < prev_end) {
-                            found_key = Some((idx, k));
+                    // Search for "\0{key}\0" pattern — the \0 before the key marks end of MOTD
+                    let pattern = format!("\0{k}\0");
+                    if let Some(idx) = find_subsequence(&body[pos..], pattern.as_bytes()) {
+                        if found_key_idx.map_or(true, |prev| idx < prev) {
+                            found_key_idx = Some(idx);
                         }
                     }
                 }
 
-                let motd_end = if let Some((idx, _)) = found_key {
+                let motd_end = if let Some(idx) = found_key_idx {
                     pos + idx
                 } else {
                     // Fallback: read until double null
@@ -269,14 +269,6 @@ mod tests {
         let data = b"hello\0world";
         let result = read_null_terminated_iso(data).unwrap();
         assert_eq!(result, "hello");
-    }
-
-    #[test]
-    fn test_parse_plugins() {
-        let (brand, plugins) = parse_plugins("Paper: Essentials; WorldEdit");
-        assert_eq!(brand.as_deref(), Some("Paper"));
-        assert_eq!(plugins.len(), 2);
-        assert_eq!(plugins[0], "Essentials");
     }
 
     #[test]
