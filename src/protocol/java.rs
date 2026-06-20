@@ -25,7 +25,7 @@ impl JavaClient {
     /// Creates a new Java client.
     pub fn new(connection: TcpConnection, address: Address, version: i32, ping_token: Option<i64>) -> Self {
         let ping_token = ping_token.unwrap_or_else(|| {
-            rand::thread_rng().gen_range(0..(1i64 << 63))
+            rand::thread_rng().gen_range(0..i64::MAX)
         });
         Self {
             connection,
