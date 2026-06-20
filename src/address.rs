@@ -108,6 +108,10 @@ impl Address {
     }
 
     /// Asynchronously resolves the hostname to an IP address.
+    ///
+    /// When the `dns` feature is enabled, uses `hickory-resolver` for DNS
+    /// resolution, which works in environments where the system resolver is
+    /// unreliable (e.g. Android/Termux).
     pub async fn async_resolve_ip(&self) -> std::io::Result<IpAddr> {
         if let Some(ip) = self.cached_ip.get() {
             return Ok(*ip);
@@ -119,27 +123,54 @@ impl Address {
             return Ok(ip);
         }
 
-        // Async DNS resolution
-        let host = self.host.clone();
-        let result = tokio::task::spawn_blocking(move || {
-            (host.as_str(), 0).to_socket_addrs().map(|iter| iter.collect::<Vec<_>>())
-        })
-        .await
-        .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
-
-        match result {
-            Ok(addrs) => {
-                for addr in addrs {
-                    let ip = addr.ip();
-                    let _ = self.cached_ip.set(ip);
-                    return Ok(ip);
+        // Use hickory-resolver when DNS feature is available (pure Rust DNS,
+        // doesn't depend on system resolver — works on Android/Termux).
+        #[cfg(feature = "dns")]
+        {
+            match crate::dns::async_resolve_a_record(&self.host).await {
+                Ok(ips) => {
+                    if let Some(&ip) = ips.first() {
+                        let _ = self.cached_ip.set(ip);
+                        return Ok(ip);
+                    }
                 }
-                Err(std::io::Error::new(
-                    std::io::ErrorKind::NotFound,
-                    format!("Could not resolve hostname: {}", self.host),
-                ))
+                Err(e) => {
+                    return Err(std::io::Error::new(
+                        std::io::ErrorKind::Other,
+                        format!("DNS resolution failed: {e}"),
+                    ));
+                }
             }
-            Err(e) => Err(e),
+            return Err(std::io::Error::new(
+                std::io::ErrorKind::NotFound,
+                format!("Could not resolve hostname: {}", self.host),
+            ));
+        }
+
+        // Fallback: use system resolver via spawn_blocking.
+        #[cfg(not(feature = "dns"))]
+        {
+            let host = self.host.clone();
+            let result = tokio::task::spawn_blocking(move || {
+                (host.as_str(), 0).to_socket_addrs().map(|iter| iter.collect::<Vec<_>>())
+            })
+            .await
+            .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
+
+            match result {
+                Ok(addrs) => {
+                    for addr in addrs {
+                        let ip = addr.ip();
+                        let _ = self.cached_ip.set(ip);
+                        return Ok(ip);
+                    }
+                    Err(std::io::Error::new(
+                        std::io::ErrorKind::NotFound,
+                        format!("Could not resolve hostname: {}", self.host),
+                    ))
+                }
+                Err(e) => Err(e),
+            }
         }
     }
 }
@@ -155,7 +186,9 @@ impl std::fmt::Display for Address {
     }
 }
 
-// Helper trait to enable .to_socket_addrs() on (&str, u16)
+// Helper trait to enable .to_socket_addrs() on (&str, u16).
+// Only needed for the system-resolver fallback path in async_resolve_ip().
+#[cfg(not(feature = "dns"))]
 use std::net::ToSocketAddrs;
 
 #[cfg(test)]
