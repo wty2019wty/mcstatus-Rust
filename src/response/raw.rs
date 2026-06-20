@@ -3,7 +3,7 @@
 //! These types mirror the JSON structure returned by Minecraft servers
 //! and are used internally by the response builders.
 
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 /// Raw Java Edition status response JSON.
 #[derive(Debug, Clone, Deserialize)]
@@ -62,7 +62,7 @@ pub struct RawJavaVersion {
 }
 
 /// Raw query response (parsed from binary, not JSON).
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct RawQueryResponse {
     pub hostname: Option<String>,
     pub gametype: Option<String>,
@@ -79,7 +79,7 @@ pub struct RawQueryResponse {
 }
 
 /// Raw forge data (pre-1.18.1 format or from `modinfo`).
-#[derive(Debug, Clone, Deserialize, Default)]
+#[derive(Debug, Clone, Deserialize, Default, serde::Serialize)]
 pub struct RawForgeData {
     #[serde(default)]
     pub mods: Option<Vec<RawForgeMod>>,
@@ -95,7 +95,7 @@ pub struct RawForgeData {
 }
 
 /// Raw forge mod entry.
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct RawForgeMod {
     #[serde(rename = "modId")]
     pub mod_id: Option<String>,
@@ -107,7 +107,7 @@ pub struct RawForgeMod {
 }
 
 /// Raw forge channel entry.
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct RawForgeChannel {
     #[serde(rename = "res")]
     pub res: String,

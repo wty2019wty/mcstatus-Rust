@@ -92,7 +92,8 @@ impl Address {
 
         // DNS resolution
         let addrs: Vec<std::net::SocketAddr> =
-            std::net::ToSocketAddrs::to_socket_addrs(&(self.host.as_str(), self.port))?;
+            std::net::ToSocketAddrs::to_socket_addrs(&(self.host.as_str(), self.port))?
+                .collect();
 
         for addr in addrs {
             let ip = addr.ip();
@@ -121,7 +122,7 @@ impl Address {
         // Async DNS resolution
         let host = self.host.clone();
         let result = tokio::task::spawn_blocking(move || {
-            (host.as_str(), 0).to_socket_addrs()
+            (host.as_str(), 0).to_socket_addrs().map(|iter| iter.collect::<Vec<_>>())
         })
         .await
         .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;

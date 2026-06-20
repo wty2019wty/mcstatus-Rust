@@ -189,12 +189,18 @@ pub trait MinecraftRead: Read {
     }
 
     /// Reads a 32-bit signed varint.
-    fn read_mc_varint(&mut self) -> std::io::Result<i32> {
+    fn read_mc_varint(&mut self) -> std::io::Result<i32>
+    where
+        Self: Sized,
+    {
         read_varint(self)
     }
 
     /// Reads a 64-bit signed varlong.
-    fn read_mc_varlong(&mut self) -> std::io::Result<i64> {
+    fn read_mc_varlong(&mut self) -> std::io::Result<i64>
+    where
+        Self: Sized,
+    {
         read_varlong(self)
     }
 
@@ -335,12 +341,18 @@ pub trait MinecraftWrite: Write {
     }
 
     /// Writes a 32-bit signed integer as a varint.
-    fn write_mc_varint(&mut self, value: i32) -> std::io::Result<()> {
+    fn write_mc_varint(&mut self, value: i32) -> std::io::Result<()>
+    where
+        Self: Sized,
+    {
         write_varint(self, value)
     }
 
     /// Writes a 64-bit signed integer as a varlong.
-    fn write_mc_varlong(&mut self, value: i64) -> std::io::Result<()> {
+    fn write_mc_varlong(&mut self, value: i64) -> std::io::Result<()>
+    where
+        Self: Sized,
+    {
         write_varlong(self, value)
     }
 

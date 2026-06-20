@@ -157,26 +157,6 @@ impl MinecraftColor {
     pub fn b(&self) -> u8 {
         (self.rgb() & 0xFF) as u8
     }
-        match self {
-            MinecraftColor::Black => 0x000000,
-            MinecraftColor::DarkBlue => 0x0000AA,
-            MinecraftColor::DarkGreen => 0x00AA00,
-            MinecraftColor::DarkAqua => 0x00AAAA,
-            MinecraftColor::DarkRed => 0xAA0000,
-            MinecraftColor::DarkPurple => 0xAA00AA,
-            MinecraftColor::Gold => 0xFFAA00,
-            MinecraftColor::Gray => 0xAAAAAA,
-            MinecraftColor::DarkGray => 0x555555,
-            MinecraftColor::Blue => 0x5555FF,
-            MinecraftColor::Green => 0x55FF55,
-            MinecraftColor::Aqua => 0x55FFFF,
-            MinecraftColor::Red => 0xFF5555,
-            MinecraftColor::LightPurple => 0xFF55FF,
-            MinecraftColor::Yellow => 0xFFFF55,
-            MinecraftColor::White => 0xFFFFFF,
-            MinecraftColor::MinecoinGold => 0xDDD605,
-        }
-    }
 
     /// Parses a color from its section-sign code character.
     pub fn from_code_char(c: char) -> Option<Self> {

@@ -5,7 +5,7 @@
 
 use crate::address::Address;
 
-/// Resolves a Minecraft server address with SRV record lookup.
+/// Resolves a Minecraft server address with optional SRV record lookup.
 ///
 /// This mimics the Minecraft client's server address field behavior:
 /// if no port is specified, an SRV record lookup is performed for
@@ -31,7 +31,7 @@ pub async fn minecraft_srv_address_lookup(
         }
     }
 
-    // Perform SRV record lookup
+    // Perform SRV record lookup (using hickory-resolver)
     match resolve_mc_srv(&addr.host).await {
         Ok(Some(srv_addr)) => Ok(srv_addr),
         Ok(None) => Ok(addr), // No SRV record, use default
@@ -44,38 +44,29 @@ pub async fn minecraft_srv_address_lookup(
 /// Returns `Some(Address)` if an SRV record is found, `None` if not.
 pub async fn resolve_mc_srv(host: &str) -> Result<Option<Address>, String> {
     let srv_host = format!("_minecraft._tcp.{host}");
-
-    match async_resolve_srv_record(&srv_host).await {
-        Ok(Some((target, port))) => Ok(Some(Address::new(target, port))),
-        Ok(None) => Ok(None),
-        Err(e) => Err(e),
-    }
+    async_resolve_srv_record(&srv_host).await
 }
 
 /// Resolves an SRV record, returning the target host and port.
 pub async fn async_resolve_srv_record(
     fqdn: &str,
 ) -> Result<Option<(String, u16)>, String> {
-    // Use hickory-resolver for DNS lookups
     use hickory_resolver::TokioAsyncResolver;
-    use hickory_resolver::config::*;
-    use hickory_resolver::proto::rr::rdata::SRV;
+    use hickory_resolver::proto::rr::RecordType;
 
-    let resolver = TokioAsyncResolver::tokio_from_system_conf()
-        .map_err(|e| format!("Failed to create DNS resolver: {e}"))?;
+    let resolver = TokioAsyncResolver::builder_tokio()
+        .map_err(|e| format!("Failed to create resolver: {e}"))?
+        .build();
 
     let response = resolver
-        .lookup(fqdn, hickory_resolver::proto::rr::RecordType::SRV)
+        .lookup(fqdn, RecordType::SRV)
         .await
         .map_err(|e| format!("SRV lookup failed: {e}"))?;
 
-    // Get the first SRV record (prioritized by the resolver)
     for record in response.record_iter() {
         if let Some(srv) = record.data().and_then(|d| d.as_srv()) {
-            let target = srv.target().to_string();
+            let target = srv.target().to_string().trim_end_matches('.').to_string();
             let port = srv.port();
-            // Remove trailing dot from FQDN
-            let target = target.trim_end_matches('.').to_string();
             return Ok(Some((target, port)));
         }
     }
@@ -87,8 +78,9 @@ pub async fn async_resolve_srv_record(
 pub async fn async_resolve_a_record(host: &str) -> Result<Vec<std::net::IpAddr>, String> {
     use hickory_resolver::TokioAsyncResolver;
 
-    let resolver = TokioAsyncResolver::tokio_from_system_conf()
-        .map_err(|e| format!("Failed to create DNS resolver: {e}"))?;
+    let resolver = TokioAsyncResolver::builder_tokio()
+        .map_err(|e| format!("Failed to create resolver: {e}"))?
+        .build();
 
     let response = resolver
         .lookup_ip(host)
@@ -104,7 +96,6 @@ mod tests {
 
     #[tokio::test]
     async fn test_minecraft_srv_with_explicit_port() {
-        // When a port is explicitly given, SRV lookup should be skipped
         let result = minecraft_srv_address_lookup("example.com:25565", 25565)
             .await
             .unwrap();
@@ -114,8 +105,6 @@ mod tests {
 
     #[tokio::test]
     async fn test_minecraft_srv_without_port() {
-        // Without a port, should try SRV (which will fail for test domains,
-        // but should gracefully fall back to default port)
         let result = minecraft_srv_address_lookup("localhost", 25565)
             .await
             .unwrap();

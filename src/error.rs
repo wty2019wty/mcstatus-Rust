@@ -51,3 +51,15 @@ pub enum McStatusError {
 
 /// Convenience result type alias.
 pub type Result<T> = std::result::Result<T, McStatusError>;
+
+impl From<String> for McStatusError {
+    fn from(s: String) -> Self {
+        McStatusError::Other(s)
+    }
+}
+
+impl From<&str> for McStatusError {
+    fn from(s: &str) -> Self {
+        McStatusError::Other(s.to_string())
+    }
+}

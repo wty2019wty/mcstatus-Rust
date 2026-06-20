@@ -43,7 +43,7 @@ impl BedrockClient {
         let timeout = std::time::Duration::from_secs_f64(self.timeout);
         let conn = UdpConnection::bind(self.address.clone(), timeout).await?;
 
-        conn.send(REQUEST_STATUS_DATA).await?;
+        conn.send(&REQUEST_STATUS_DATA).await?;
         let data = conn.recv(2048).await?;
 
         Ok(data)
