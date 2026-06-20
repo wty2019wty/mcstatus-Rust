@@ -98,3 +98,5 @@ Mcstatus is licensed under the Apache 2.0 license. See LICENSE for full text.
 cargo build --features cli
 
 cargo build
+
+cargo build --release --features cli
